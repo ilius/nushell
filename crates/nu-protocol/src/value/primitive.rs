@@ -260,12 +260,15 @@ pub fn format_primitive(primitive: &Primitive, field_name: Option<&String>) -> S
                 if byte.get_bytes() == 0u128 {
                     return "—".to_string();
                 }
+                if byte.get_bytes() <= 4096 {
+                    return format!("{} B ", byte.get_bytes());
+                }
 
-                let byte = byte.get_appropriate_unit(false);
+                let adj_byte = byte.get_appropriate_unit(false);
 
-                match byte.get_unit() {
-                    byte_unit::ByteUnit::B => format!("{} B ", byte.get_value()),
-                    _ => byte.format(1),
+                match adj_byte.get_unit() {
+                    byte_unit::ByteUnit::B => format!("{} B ", adj_byte.get_value()),
+                    _ => adj_byte.format(1),
                 }
             } else {
                 format!("{} B", num_bytes)
