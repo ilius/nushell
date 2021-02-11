@@ -53,7 +53,7 @@ impl WholeStreamCommand for PathType {
 fn action(path: &Path, _args: &PathTypeArguments) -> UntaggedValue {
     let meta = std::fs::symlink_metadata(path);
     UntaggedValue::string(match &meta {
-        Ok(md) => get_file_type(md),
+        Ok(md) => get_file_type(md).0,
         Err(_) => "",
     })
 }

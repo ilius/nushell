@@ -978,30 +978,29 @@ fn is_hidden_dir(dir: impl AsRef<Path>) -> bool {
 #[cfg(unix)]
 use std::os::unix::fs::FileTypeExt;
 
-pub fn get_file_type(md: &std::fs::Metadata) -> &str {
+pub fn get_file_type(md: &std::fs::Metadata) -> (&str, char) {
     let ft = md.file_type();
-    let mut file_type = "Unknown";
     if ft.is_dir() {
-        file_type = "Dir";
+        return ("Dir", 'd');
     } else if ft.is_file() {
-        file_type = "File";
+        return ("File", '-');
     } else if ft.is_symlink() {
-        file_type = "Symlink";
+        return ("Symlink", 'l');
     } else {
         #[cfg(unix)]
         {
             if ft.is_block_device() {
-                file_type = "Block device";
+                return ("Block device", 'b');
             } else if ft.is_char_device() {
-                file_type = "Char device";
+                return ("Char device", 'c');
             } else if ft.is_fifo() {
-                file_type = "Pipe";
+                return ("Pipe", 'p');
             } else if ft.is_socket() {
-                file_type = "Socket";
+                return ("Socket", 's');
             }
         }
     }
-    file_type
+    return ("Unknown", '?');
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -1017,11 +1016,17 @@ pub(crate) fn dir_entry_dict(
     let tag = tag.into();
     let mut dict = TaggedDictBuilder::new(&tag);
     // Insert all columns first to maintain proper table alignment if we can't find (or are not allowed to view) any information
+
+    #[cfg(unix)]
+    let type_col = "t";
+    #[cfg(not(unix))]
+    let type_col = "type";
+
     if long {
         #[cfg(windows)]
         {
             for column in [
-                "name", "type", "target", "readonly", "size", "created", "accessed", "modified",
+                "name", type_col, "target", "readonly", "size", "created", "accessed", "modified",
             ]
             .iter()
             {
@@ -1033,7 +1038,7 @@ pub(crate) fn dir_entry_dict(
         {
             for column in [
                 "name",
-                "type",
+                type_col,
                 "target",
                 "num_links",
                 "inode",
@@ -1052,7 +1057,7 @@ pub(crate) fn dir_entry_dict(
             }
         }
     } else {
-        for column in ["name", "type", "target", "size", "modified"].iter() {
+        for column in ["name", type_col, "target", "size", "modified"].iter() {
             if *column == "target" {
                 continue;
             }
@@ -1076,7 +1081,12 @@ pub(crate) fn dir_entry_dict(
     dict.insert_untagged("name", UntaggedValue::filepath(name));
 
     if let Some(md) = metadata {
-        dict.insert_untagged("type", get_file_type(md));
+        let (type_, t) = get_file_type(md);
+        if type_col == "t" {
+            dict.insert_untagged("t", t.to_string());
+        } else {
+            dict.insert_untagged("type", type_);
+        }
     }
 
     if long {
