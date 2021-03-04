@@ -276,6 +276,25 @@ pub async fn cli(context: EvaluationContext, options: Options) -> Result<(), Box
             }
         };
 
+        let config = config::config(Tag::unknown());
+        #[cfg(unix)]
+        let prompt = match config
+            .unwrap_or_default()
+            .get("prompt_color_enabled")
+            .map(|s| s.value.is_true())
+            .unwrap_or(true)
+        {
+            true => colored_prompt.to_owned(),
+            false => {
+                if let Ok(bytes) = strip_ansi_escapes::strip(&colored_prompt) {
+                    String::from_utf8_lossy(&bytes).to_string()
+                } else {
+                    "> ".to_string()
+                }
+            }
+        };
+        // FIXME: https://github.com/nushell/nushell/pull/3127
+        #[cfg(windows)]
         let prompt = {
             if let Ok(bytes) = strip_ansi_escapes::strip(&colored_prompt) {
                 String::from_utf8_lossy(&bytes).to_string()
