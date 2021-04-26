@@ -43,7 +43,7 @@ impl WholeStreamCommand for PathParse {
     }
 
     fn usage(&self) -> &str {
-        "Convert a path into structured data."
+        "Convert a path into structured data (parent, stem, extension)"
     }
 
     fn extra_usage(&self) -> &str {
