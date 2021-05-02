@@ -929,7 +929,7 @@ fn parse_arg(
             }
         }
         SyntaxShape::Int => {
-            if lite_arg.item.starts_with("0x") {
+            if lite_arg.item.starts_with("0x") || lite_arg.item.starts_with("-0x") {
                 let hex = lite_arg.item.trim_start_matches("0x");
                 let res = <BigInt as Num>::from_str_radix(hex, 16);
                 match res {
