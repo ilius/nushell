@@ -13,7 +13,6 @@ use nu_protocol::hir::{
 use nu_protocol::{NamedType, PositionalType, Signature, SyntaxShape, UnspannedPathMember};
 use nu_source::{HasSpan, Span, Spanned, SpannedItem};
 use num_bigint::BigInt;
-use num_traits::Num;
 
 use crate::parse::source::parse_source_internal;
 use crate::{lex::lexer::NewlineMode, parse::def::parse_parameter};
@@ -931,7 +930,7 @@ fn parse_arg(
         SyntaxShape::Int => {
             if lite_arg.item.starts_with("0x") || lite_arg.item.starts_with("-0x") {
                 let hex = lite_arg.item.trim_start_matches("0x");
-                let res = <BigInt as Num>::from_str_radix(hex, 16);
+				let res = i64::from_str_radix(hex, 16);
                 match res {
                     Ok(x) => (
                         SpannedExpression::new(Expression::integer(x), lite_arg.span),
