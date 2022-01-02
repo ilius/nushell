@@ -316,11 +316,20 @@ pub fn cli(
             }
         };
 
-        let prompt = {
-            if let Ok(bytes) = strip_ansi_escapes::strip(&colored_prompt) {
-                String::from_utf8_lossy(&bytes).to_string()
-            } else {
-                "> ".to_string()
+        let config = config::config(Tag::unknown());
+        let prompt = match config
+            .unwrap_or_default()
+            .get("prompt_color_enabled")
+            .map(|s| s.value.is_true())
+            .unwrap_or(false)
+        {
+            true => colored_prompt.to_owned(),
+            false => {
+                if let Ok(bytes) = strip_ansi_escapes::strip(&colored_prompt) {
+                    String::from_utf8_lossy(&bytes).to_string()
+                } else {
+                    "> ".to_string()
+                }
             }
         };
 

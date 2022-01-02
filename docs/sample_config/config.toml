@@ -14,6 +14,7 @@ pivot_mode = "auto" # auto, always, never
 ctrlc_exit = false
 complete_from_path = true
 rm_always_trash = true
+prompt_color_enabled = false
 
 [env]
 # nu now reads PROMPT_COMMAND env var instead of "prompt" config parameter
