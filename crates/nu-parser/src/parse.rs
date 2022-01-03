@@ -928,7 +928,20 @@ fn parse_arg(
             }
         }
         SyntaxShape::Int => {
-            if let Ok(x) = lite_arg.item.parse::<i64>() {
+            if lite_arg.item.starts_with("0x") || lite_arg.item.starts_with("-0x") {
+                let hex = lite_arg.item.trim_start_matches("0x");
+                let res = i64::from_str_radix(hex, 16);
+                match res {
+                    Ok(x) => (
+                        SpannedExpression::new(Expression::integer(x), lite_arg.span),
+                        None,
+                    ),
+                    Err(_) => (
+                        garbage(lite_arg.span),
+                        Some(ParseError::mismatch("hex int", lite_arg.clone())),
+                    ),
+                }
+            } else if let Ok(x) = lite_arg.item.parse::<i64>() {
                 (
                     SpannedExpression::new(Expression::integer(x), lite_arg.span),
                     None,

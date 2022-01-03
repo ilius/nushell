@@ -64,3 +64,15 @@ fn defs_contain_multiple_comments_in_help() {
             .contains("I comment and test all my functions. I am the best boy."));
     });
 }
+
+#[test]
+fn parse_arg_hex_literal() {
+    Playground::setup("parse_arg_hex_literal", |dirs, sandbox| {
+        let actual = nu!(cwd: dirs.test(), r#"
+            echo 0x00f 0x123
+        	"#);
+
+        assert!(actual.out.contains(" 0 │  15  1 │ 291 "))
+        // assert_eq!(actual.out, "───┬───── 0 │  15  1 │ 291 ───┴─────");
+    });
+}
